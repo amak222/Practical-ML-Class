@@ -1,5 +1,30 @@
 #The assingment requires to use the weight lifting exercise data set and create a classification algorithm. The algorithm 
-is to classify the manner in which the subjects perform their exercise (correct and incorrect variations of the same 
-exercise). The study subjects wore motion tracking devices in order to capture various data about their exercise. There 
-are 5 class levels (variations of the same exercise) that are required for training the algorithm and using it to 
-subsequently make predictions on 20 pre-determined out-of-sample examples.
+#is to classify the manner in which the subjects perform their exercise (correct and incorrect variations of the same 
+#exercise). The study subjects wore motion tracking devices in order to capture various data about their exercise. There 
+#are 5 class levels (variations of the same exercise) that are required for training the algorithm and using it to 
+#subsequently make predictions on 20 pre-determined out-of-sample examples.
+
+#I downloded the data sets "pml-training.csv" and "pml-testing.csv" directly to my hard-drive and them imported them into
+# my work directory in R.
+
+#Call the necessary libraries for the analysis
+library(lattice)
+library(ggplot2)
+library(caret)
+library(rpart)
+library(rattle)
+
+#Read In The files
+#Set Work Directory
+setwd("~/Career/Practical_Machine_Learning/Assignments")
+
+#Set the seed number if I would like to recreate the exact results later
+set.seed(1357)
+
+#Read In The files
+d_trn <- read.csv("pml-training.csv", header=TRUE,na.strings=c("NA","#DIV/0!",""))
+d_tst <- read.csv("pml-testing.csv", header=TRUE,na.strings=c("NA","#DIV/0!",""))
+
+dim(d_trn); dim(d_tst)
+#[1] 19622    160
+#[1]  20      160
