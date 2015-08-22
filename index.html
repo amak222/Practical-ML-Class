@@ -74,11 +74,9 @@ dim(d_trn); dim(d_tst)
 
 <p>Rows and columns</p>
 
-<blockquote>
 <p>[1] 19622    160</p>
 
 <p>[1]  20      160</p>
-</blockquote>
 
 <p>160 features are present in the data. The data set with 20 observation will be used to perform the final prediction. 
 The "d_trn" data will be be partitioned into training and testing 50/50. Conventionally, the split is typically 60/40,
@@ -94,11 +92,9 @@ wkTesting &lt;- d_trn[-inTrain, ]
 dim(wkTraining); dim(wkTesting)
 </code></pre>
 
-<blockquote>
 <p>[1] 9812  160</p>
 
 <p>[1] 9810  160</p>
-</blockquote>
 
 <p>Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
 curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
@@ -146,9 +142,7 @@ for(i in 1:length(wkTraining))
 dim(hldTraining)
 </code></pre>
 
-<blockquote>
 <p>[1] 9812   53</p>
-</blockquote>
 
 <pre><code>rm(wkTraining)
 wkTraining &lt;- hldTraining
@@ -158,15 +152,16 @@ rm(hldTraining)
 <p>Only 53 features remain in the data after irrelevant predictors have been removed.</p>
 
 <h3>
-<a id="boostrapping-of-the-training-data" class="anchor" href="#boostrapping-of-the-training-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Boostrapping of the Training Data</h3>
+<a id="bootstrapping-of-the-training-data" class="anchor" href="#bootstrapping-of-the-training-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bootstrapping of the Training Data</h3>
 
 <p>As an experiment, I decided to bootstrap my training data in an effort to cross validate the quality of some algorithms
 I will be building. This is a good check for how the error will behave under an out-of-sample scenario. </p>
 
-<p>fitControl &lt;- trainControl(
-                           method = "repeatedcv",
-                           number = 4,
-                           repeats = 4)</p>
+<pre><code>fitControl &lt;- trainControl(
+                       method = "repeatedcv",
+                       number = 4,
+                       repeats = 4)
+</code></pre>
 
 <p>The fitControl object will be later applied to a boosting algorithm.</p>
 
@@ -178,7 +173,7 @@ I will be building. This is a good check for how the error will behave under an 
 <ol>
 <li><p>Decision Tree</p></li>
 <li><p>Random Forests</p></li>
-<li>Boosting</li>
+<li><p>Boosting</p></li>
 </ol>
 
 <p>Before I proceeded, I ran a descriptive statistics analysis. The analysis revealed that 4 predictors were highly correlated (&gt;.9) with some of the other predictors. I will eliminate those because they do not carry any additional information signal.</p>
@@ -195,12 +190,16 @@ I will be building. This is a good check for how the error will behave under an 
 print(mod_DT)
 </code></pre>
 
-<p>---CART 
+<hr>
+
+<p>CART 
 9812 samples
 48 predictor
 5 classes: 'A', 'B', 'C', 'D', 'E' </p>
 
-<p>---No pre-processing
+<hr>
+
+<p>No pre-processing
 Resampling: Bootstrapped (25 reps) 
 Summary of sample sizes: 9812, 9812, 9812, 9812, 9812, 9812, ... 
 Resampling results across tuning parameters:
