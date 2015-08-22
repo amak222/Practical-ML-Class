@@ -155,6 +155,171 @@ rm(hldTraining)
 </code></pre>
 
 <p>Only 53 features remain in the data after irrelevant predictors have been removed.</p>
+
+<h3>
+<a id="boostrapping-of-the-training-data" class="anchor" href="#boostrapping-of-the-training-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Boostrapping of the Training Data</h3>
+
+<p>As an experiment, I decided to bootstrap my training data in an effort to cross validate the quality of some algorithms
+I will be building. This is a good check for how the error will behave under an out-of-sample scenario. </p>
+
+<p>fitControl &lt;- trainControl(
+                           method = "repeatedcv",
+                           number = 4,
+                           repeats = 4)</p>
+
+<p>The fitControl object will be later applied to a boosting algorithm.</p>
+
+<h1>
+<a id="machine-learning-algorithms" class="anchor" href="#machine-learning-algorithms" aria-hidden="true"><span class="octicon octicon-link"></span></a>Machine Learning Algorithms</h1>
+
+<p>I will train three algorithms - 
+    #Decision Tree
+    #Random Forests
+    #Boosting</p>
+
+<p>Before I proceeded, I ran a descriptive statistics analysis. The analysis revealed that 4 predictors were highly correlated (&gt;.9) with some of the other predictors. I will eliminate those because they do not carry any additional information signal.</p>
+
+<p>Removing highly correlated features</p>
+
+<pre><code>wkTraining &lt;- subset(wkTraining,select=-c(gyros_belt_x,gyros_belt_y,magnet_dumbbell_x,magnet_dumbbell_y))
+</code></pre>
+
+<h3>
+<a id="decision-tree-dt" class="anchor" href="#decision-tree-dt" aria-hidden="true"><span class="octicon octicon-link"></span></a>DECISION TREE (DT)</h3>
+
+<pre><code>mod_DT &lt;- train(wkTraining$classe ~ ., method="rpart",data=wkTraining)
+print(mod_DT)
+</code></pre>
+
+<h5>
+<a id="cart" class="anchor" href="#cart" aria-hidden="true"><span class="octicon octicon-link"></span></a>CART</h5>
+
+<h5>
+<a id="9812-samples" class="anchor" href="#9812-samples" aria-hidden="true"><span class="octicon octicon-link"></span></a>9812 samples</h5>
+
+<p>#####48 predictor
+  #####5 classes: 'A', 'B', 'C', 'D', 'E' </p>
+
+<h5>
+<a id="no-pre-processing" class="anchor" href="#no-pre-processing" aria-hidden="true"><span class="octicon octicon-link"></span></a>No pre-processing</h5>
+
+<h5>
+<a id="resampling-bootstrapped-25-reps" class="anchor" href="#resampling-bootstrapped-25-reps" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resampling: Bootstrapped (25 reps)</h5>
+
+<h5>
+<a id="summary-of-sample-sizes-9812-9812-9812-9812-9812-9812-" class="anchor" href="#summary-of-sample-sizes-9812-9812-9812-9812-9812-9812-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Summary of sample sizes: 9812, 9812, 9812, 9812, 9812, 9812, ...</h5>
+
+<h5>
+<a id="resampling-results-across-tuning-parameters" class="anchor" href="#resampling-results-across-tuning-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resampling results across tuning parameters:</h5>
+
+<h5>
+<a id="cp----------accuracy---kappa-------accuracy-sd--kappa-sd" class="anchor" href="#cp----------accuracy---kappa-------accuracy-sd--kappa-sd" aria-hidden="true"><span class="octicon octicon-link"></span></a>cp          Accuracy   Kappa       Accuracy SD  Kappa SD</h5>
+
+<h5>
+<a id="002242951--06067790--049993101--004281592---006093116" class="anchor" href="#002242951--06067790--049993101--004281592---006093116" aria-hidden="true"><span class="octicon octicon-link"></span></a>0.02242951  0.6067790  0.49993101  0.04281592   0.06093116</h5>
+
+<h5>
+<a id="002734264--05613997--043881968--006190937---009270286" class="anchor" href="#002734264--05613997--043881968--006190937---009270286" aria-hidden="true"><span class="octicon octicon-link"></span></a>0.02734264  0.5613997  0.43881968  0.06190937   0.09270286</h5>
+
+<h5>
+<a id="011777271--03343041--007564283--003972848---006310175" class="anchor" href="#011777271--03343041--007564283--003972848---006310175" aria-hidden="true"><span class="octicon octicon-link"></span></a>0.11777271  0.3343041  0.07564283  0.03972848   0.06310175</h5>
+
+<h5>
+<a id="accuracy-was-used-to-select-the-optimal-model-using--the-largest-value-the-final-value-used-for-the-model-was-cp-002242951" class="anchor" href="#accuracy-was-used-to-select-the-optimal-model-using--the-largest-value-the-final-value-used-for-the-model-was-cp-002242951" aria-hidden="true"><span class="octicon octicon-link"></span></a>Accuracy was used to select the optimal model using  the largest value. The final value used for the model was cp =0.02242951.</h5>
+
+<h5>
+<a id="n-9812" class="anchor" href="#n-9812" aria-hidden="true"><span class="octicon octicon-link"></span></a>n= 9812</h5>
+
+<p>Visualize the trained decision tree</p>
+
+<pre><code>fancyRpartPlot(mod_DT$finalModel)
+
+ {insert the image here}
+</code></pre>
+
+<p>Assess the performance on the testing data</p>
+
+<pre><code>prd_DT &lt;- predict(mod_DT, newdata=wkTesting)
+DT_CMX &lt;- confusionMatrix(prd_DT, wkTesting$classe)
+DT_CMX
+</code></pre>
+
+<p>Confusion Matrix and Statistics</p>
+
+<h5>
+<a id="reference" class="anchor" href="#reference" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reference</h5>
+
+<h5>
+<a id="prediction----a----b----c----d----e" class="anchor" href="#prediction----a----b----c----d----e" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prediction    A    B    C    D    E</h5>
+
+<h5>
+<a id="a-2248--635---83--211---92" class="anchor" href="#a-2248--635---83--211---92" aria-hidden="true"><span class="octicon octicon-link"></span></a>A 2248  635   83  211   92</h5>
+
+<h5>
+<a id="b---25--808---42--150--455" class="anchor" href="#b---25--808---42--150--455" aria-hidden="true"><span class="octicon octicon-link"></span></a>B   25  808   42  150  455</h5>
+
+<h5>
+<a id="c--467--409-1385--504--365" class="anchor" href="#c--467--409-1385--504--365" aria-hidden="true"><span class="octicon octicon-link"></span></a>C  467  409 1385  504  365</h5>
+
+<h5>
+<a id="d---42---46--201--743---93" class="anchor" href="#d---42---46--201--743---93" aria-hidden="true"><span class="octicon octicon-link"></span></a>D   42   46  201  743   93</h5>
+
+<h5>
+<a id="e----8----0----0----0--798" class="anchor" href="#e----8----0----0----0--798" aria-hidden="true"><span class="octicon octicon-link"></span></a>E    8    0    0    0  798</h5>
+
+<h5>
+<a id="overall-statistics" class="anchor" href="#overall-statistics" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overall Statistics</h5>
+
+<h5>
+<a id="accuracy--06098" class="anchor" href="#accuracy--06098" aria-hidden="true"><span class="octicon octicon-link"></span></a>Accuracy : 0.6098</h5>
+
+<h5>
+<a id="95-ci--06001-06195" class="anchor" href="#95-ci--06001-06195" aria-hidden="true"><span class="octicon octicon-link"></span></a>95% CI : (0.6001, 0.6195)</h5>
+
+<h5>
+<a id="no-information-rate--02844" class="anchor" href="#no-information-rate--02844" aria-hidden="true"><span class="octicon octicon-link"></span></a>No Information Rate : 0.2844</h5>
+
+<h5>
+<a id="p-value-acc--nir---22e-16" class="anchor" href="#p-value-acc--nir---22e-16" aria-hidden="true"><span class="octicon octicon-link"></span></a>P-Value [Acc &gt; NIR] : &lt; 2.2e-16</h5>
+
+<h5>
+<a id="kappa--05039" class="anchor" href="#kappa--05039" aria-hidden="true"><span class="octicon octicon-link"></span></a>Kappa : 0.5039</h5>
+
+<h5>
+<a id="mcnemars-test-p-value---22e-16" class="anchor" href="#mcnemars-test-p-value---22e-16" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mcnemar's Test P-Value : &lt; 2.2e-16</h5>
+
+<h5>
+<a id="statistics-by-class" class="anchor" href="#statistics-by-class" aria-hidden="true"><span class="octicon octicon-link"></span></a>Statistics by Class:</h5>
+
+<h5>
+<a id="class-a-class-b-class-c-class-d-class-e" class="anchor" href="#class-a-class-b-class-c-class-d-class-e" aria-hidden="true"><span class="octicon octicon-link"></span></a>Class: A Class: B Class: C Class: D Class: E</h5>
+
+<h5>
+<a id="sensitivity------------08057--042571---08095--046206--044260" class="anchor" href="#sensitivity------------08057--042571---08095--046206--044260" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sensitivity            0.8057  0.42571   0.8095  0.46206  0.44260</h5>
+
+<h5>
+<a id="specificity------------08546--091507---07845--095343--099900" class="anchor" href="#specificity------------08546--091507---07845--095343--099900" aria-hidden="true"><span class="octicon octicon-link"></span></a>Specificity            0.8546  0.91507   0.7845  0.95343  0.99900</h5>
+
+<h5>
+<a id="pos-pred-value---------06877--054595---04425--066044--099007" class="anchor" href="#pos-pred-value---------06877--054595---04425--066044--099007" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pos Pred Value         0.6877  0.54595   0.4425  0.66044  0.99007</h5>
+
+<h5>
+<a id="neg-pred-value---------09171--086915---09512--090040--088838" class="anchor" href="#neg-pred-value---------09171--086915---09512--090040--088838" aria-hidden="true"><span class="octicon octicon-link"></span></a>Neg Pred Value         0.9171  0.86915   0.9512  0.90040  0.88838</h5>
+
+<h5>
+<a id="prevalence-------------02844--019348---01744--016391--018379" class="anchor" href="#prevalence-------------02844--019348---01744--016391--018379" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prevalence             0.2844  0.19348   0.1744  0.16391  0.18379</h5>
+
+<h5>
+<a id="detection-rate---------02292--008236---01412--007574--008135" class="anchor" href="#detection-rate---------02292--008236---01412--007574--008135" aria-hidden="true"><span class="octicon octicon-link"></span></a>Detection Rate         0.2292  0.08236   0.1412  0.07574  0.08135</h5>
+
+<h5>
+<a id="detection-prevalence---03332--015087---03191--011468--008216" class="anchor" href="#detection-prevalence---03332--015087---03191--011468--008216" aria-hidden="true"><span class="octicon octicon-link"></span></a>Detection Prevalence   0.3332  0.15087   0.3191  0.11468  0.08216</h5>
+
+<h5>
+<a id="balanced-accuracy------08301--067039---07970--070775--072080" class="anchor" href="#balanced-accuracy------08301--067039---07970--070775--072080" aria-hidden="true"><span class="octicon octicon-link"></span></a>Balanced Accuracy      0.8301  0.67039   0.7970  0.70775  0.72080</h5>
+
+<h5>
+<a id="achieved-accuracy-is-61-in-testing-and-the-confusion-matrix-shows-that-many-cases-are-misclassified-possibly-a-different-approach-is-necessary" class="anchor" href="#achieved-accuracy-is-61-in-testing-and-the-confusion-matrix-shows-that-many-cases-are-misclassified-possibly-a-different-approach-is-necessary" aria-hidden="true"><span class="octicon octicon-link"></span></a>Achieved accuracy is .61 in testing and the confusion matrix shows that many cases are misclassified. Possibly a different approach is necessary.</h5>
         </section>
 
         <aside id="sidebar">
