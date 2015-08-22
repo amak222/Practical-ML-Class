@@ -102,8 +102,8 @@ dim(wkTraining); dim(wkTesting)
 
 <p>Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
 curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
-These fields are not very useful to make predictiions unless the predictions are made on repetitive exercise and
-not on a one-time obsevation similar to the ones in the 20 sample data. Features with NA of more than 50% of
+These fields are not very useful to make predictions unless the predictions are made on repetitive exercise and
+not on a one-time observation similar to the ones in the 20 sample data. Features with NA of more than 50% of
 observations as well as near zero variance field will be removed.</p>
 
 <p>Among other irrelevant features were the features representing user names, date and time stamps and some indication what
@@ -195,31 +195,29 @@ I will be building. This is a good check for how the error will behave under an 
 print(mod_DT)
 </code></pre>
 
-<blockquote>
-<p>CART 
+<p>---CART 
 9812 samples
 48 predictor
 5 classes: 'A', 'B', 'C', 'D', 'E' </p>
 
-<p>No pre-processing
+<p>---No pre-processing
 Resampling: Bootstrapped (25 reps) 
 Summary of sample sizes: 9812, 9812, 9812, 9812, 9812, 9812, ... 
 Resampling results across tuning parameters:
-cp          Accuracy   Kappa       Accuracy SD  Kappa SD<br>
+ cp          Accuracy   Kappa       Accuracy SD  Kappa SD<br>
 0.02242951  0.6067790  0.49993101  0.04281592   0.06093116
 0.02734264  0.5613997  0.43881968  0.06190937   0.09270286
 0.11777271  0.3343041  0.07564283  0.03972848   0.06310175</p>
 
 <p>Accuracy was used to select the optimal model using  the largest value. The final value used for the model was cp =0.02242951. 
 n= 9812</p>
-</blockquote>
 
 <p>Visualize the trained decision tree</p>
 
 <pre><code>fancyRpartPlot(mod_DT$finalModel)
-
- {insert the image here}
 </code></pre>
+
+<p>{insert the image here}</p>
 
 <p>Assess the performance on the testing data</p>
 
@@ -228,33 +226,32 @@ DT_CMX &lt;- confusionMatrix(prd_DT, wkTesting$classe)
 DT_CMX
 </code></pre>
 
-<blockquote>
 <p>Confusion Matrix and Statistics</p>
 
-<pre><code>     Reference
+<pre><code>      Reference
 </code></pre>
 
 <p>Prediction    A    B    C    D    E
-        A 2248  635   83  211   92
-        B   25  808   42  150  455
-        C  467  409 1385  504  365
-        D   42   46  201  743   93
-        E    8    0    0    0  798</p>
+         A 2248  635   83  211   92
+         B   25  808   42  150  455
+         C  467  409 1385  504  365
+         D   42   46  201  743   93
+         E    8    0    0    0  798</p>
 
 <p>Overall Statistics</p>
 
-<pre><code>         Accuracy : 0.6098          
-           95% CI : (0.6001, 0.6195)
+<pre><code>          Accuracy : 0.6098          
+            95% CI : (0.6001, 0.6195)
+No Information Rate : 0.2844          
+P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+              Kappa : 0.5039          
 </code></pre>
 
-<p>No Information Rate : 0.2844<br>
-   P-Value [Acc &gt; NIR] : &lt; 2.2e-16<br>
-                 Kappa : 0.5039<br>
-Mcnemar's Test P-Value : &lt; 2.2e-16       </p>
+<p>Mcnemar's Test P-Value : &lt; 2.2e-16       </p>
 
 <p>Statistics by Class:</p>
 
-<pre><code>                Class: A Class: B Class: C Class: D Class: E
+<pre><code>                 Class: A Class: B Class: C Class: D Class: E
 </code></pre>
 
 <p>Sensitivity            0.8057  0.42571   0.8095  0.46206  0.44260
@@ -267,7 +264,6 @@ Detection Prevalence   0.3332  0.15087   0.3191  0.11468  0.08216
 Balanced Accuracy      0.8301  0.67039   0.7970  0.70775  0.72080</p>
 
 <p>Achieved accuracy is .61 in testing and the confusion matrix shows that many cases are misclassified. Possibly a different approach is necessary.</p>
-</blockquote>
         </section>
 
         <aside id="sidebar">
