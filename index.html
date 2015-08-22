@@ -74,11 +74,11 @@ dim(d_trn); dim(d_tst)
 
 <p>Rows and columns</p>
 
-<h4>
-<a id="1-19622----160" class="anchor" href="#1-19622----160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 19622    160</h4>
+<blockquote>
+<p>[1] 19622    160</p>
 
-<h4>
-<a id="1--20------160" class="anchor" href="#1--20------160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1]  20      160</h4>
+<p>[1]  20      160</p>
+</blockquote>
 
 <p>160 features are present in the data. The data set with 20 observation will be used to perform the final prediction. 
 The "d_trn" data will be be partitioned into training and testing 50/50. Conventionally, the split is typically 60/40,
@@ -94,11 +94,11 @@ wkTesting &lt;- d_trn[-inTrain, ]
 dim(wkTraining); dim(wkTesting)
 </code></pre>
 
-<h4>
-<a id="1-9812--160" class="anchor" href="#1-9812--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812  160</h4>
+<blockquote>
+<p>[1] 9812  160</p>
 
-<h4>
-<a id="1-9810--160" class="anchor" href="#1-9810--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9810  160</h4>
+<p>[1] 9810  160</p>
+</blockquote>
 
 <p>Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
 curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
@@ -146,8 +146,9 @@ for(i in 1:length(wkTraining))
 dim(hldTraining)
 </code></pre>
 
-<h4>
-<a id="1-9812---53" class="anchor" href="#1-9812---53" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812   53</h4>
+<blockquote>
+<p>[1] 9812   53</p>
+</blockquote>
 
 <pre><code>rm(wkTraining)
 wkTraining &lt;- hldTraining
@@ -169,13 +170,16 @@ I will be building. This is a good check for how the error will behave under an 
 
 <p>The fitControl object will be later applied to a boosting algorithm.</p>
 
-<h1>
-<a id="machine-learning-algorithms" class="anchor" href="#machine-learning-algorithms" aria-hidden="true"><span class="octicon octicon-link"></span></a>Machine Learning Algorithms</h1>
+<h2>
+<a id="machine-learning-algorithms" class="anchor" href="#machine-learning-algorithms" aria-hidden="true"><span class="octicon octicon-link"></span></a>Machine Learning Algorithms</h2>
 
-<p>I will train three algorithms - 
-    #Decision Tree
-    #Random Forests
-    #Boosting</p>
+<p>I will train three algorithms - </p>
+
+<ol>
+<li><p>Decision Tree</p></li>
+<li><p>Random Forests</p></li>
+<li>Boosting</li>
+</ol>
 
 <p>Before I proceeded, I ran a descriptive statistics analysis. The analysis revealed that 4 predictors were highly correlated (&gt;.9) with some of the other predictors. I will eliminate those because they do not carry any additional information signal.</p>
 
@@ -185,16 +189,15 @@ I will be building. This is a good check for how the error will behave under an 
 </code></pre>
 
 <h3>
-<a id="decision-tree-dt" class="anchor" href="#decision-tree-dt" aria-hidden="true"><span class="octicon octicon-link"></span></a>DECISION TREE (DT)</h3>
+<a id="1-decision-tree-dt" class="anchor" href="#1-decision-tree-dt" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. DECISION TREE (DT)</h3>
 
 <pre><code>mod_DT &lt;- train(wkTraining$classe ~ ., method="rpart",data=wkTraining)
 print(mod_DT)
 </code></pre>
 
 <blockquote>
-<p>CART </p>
-
-<p>9812 samples
+<p>CART 
+9812 samples
 48 predictor
 5 classes: 'A', 'B', 'C', 'D', 'E' </p>
 
