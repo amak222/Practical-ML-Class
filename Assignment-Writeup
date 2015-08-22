@@ -28,3 +28,98 @@ d_tst <- read.csv("pml-testing.csv", header=TRUE,na.strings=c("NA","#DIV/0!","")
 dim(d_trn); dim(d_tst)
 #[1] 19622    160
 #[1]  20      160
+
+#160 features are present in the data. The data set with 20 observation will be used to perform the final prediction. 
+#The "d_trn" data will be be partitioned into training and testing 50/50. Conventionally, the split is typically 60/40,
+#but I decided to reduce the processign time (random forests take a long time) on with the smaller training data set.
+#The partition is doneon the classification target variable "classe."
+
+# Partition the Training Data
+inTrain <- createDataPartition(y=d_trn$classe, p=0.5, list=FALSE)
+wkTraining <- d_trn[inTrain, ]
+wkTesting <- d_trn[-inTrain, ]
+dim(wkTraining); dim(wkTesting)
+
+#[1] 9812  160
+#[1] 9810  160
+
+#Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
+#curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
+#These fields are not very useful to make predictiions unless the predictions are made on repetitive exercise and
+#not on a one-time obsevation similar to the ones in the 20 sample data. Features with NA of more than 50% of
+observations as well as near zero variance field will be removed.
+
+#Eliminate Zero Variance Predictors
+
+wkDataNZV <- nearZeroVar(wkTraining, saveMetrics=TRUE)
+wkDataNZV
+
+#Remove the features
+wkNZVvars <- names(wkTraining) %in% c("new_window","num_window",
+"kurtosis_yaw_belt",
+"skewness_yaw_belt",
+"amplitude_yaw_belt",
+"avg_roll_arm",
+"stddev_roll_arm",
+"var_roll_arm",
+"avg_pitch_arm",
+"stddev_pitch_arm",
+"var_pitch_arm",
+"avg_yaw_arm",
+"stddev_yaw_arm",
+"var_yaw_arm",
+"amplitude_roll_arm",
+"kurtosis_yaw_dumbbell",
+"skewness_yaw_dumbbel",
+"amplitude_yaw_dumbbel",
+"kurtosis_yaw_forearm",
+"skewness_yaw_forearm",
+"amplitude_roll_forearm",
+"amplitude_yaw_forearm",
+"avg_roll_forearm",
+"stddev_roll_forearm",
+"var_roll_forearm",
+"avg_pitch_forearm",
+"stddev_pitch_forearm",
+"var_pitch_forearm",
+"avg_yaw_forearm",
+"stddev_yaw_forearm",
+"var_yaw_forearm",
+"min_pitch_arm",
+"skewness_yaw_dumbbell",
+"amplitude_yaw_dumbbell",
+#remove certain features
+"X",
+"raw_timestamp_part_1",
+"raw_timestamp_part_2",
+"cvtd_timestamp",
+"user_name"
+)
+
+wkTraining <- wkTraining[!wkNZVvars]
+dim(wkTraining)
+
+#Eliminate Predictors where NA >= 51%
+hldTraining <- wkTraining
+
+for(i in 1:length(wkTraining)) 
+	{ 
+        if(sum( is.na(wkTraining[, i] ) ) /nrow(wkTraining) >= .51 ) #NAs > 51% of total Ns
+		{
+		        for(j in 1:length(hldTraining))
+				 {
+            			if(length( grep(names(wkTraining[i]), names(hldTraining)[j]) ) ==1)  #if same name
+		{
+                hldTraining <- hldTraining[ , -j] #Remove that variable
+            	}   
+        			} 
+    	}
+}
+
+dim(hldTraining)
+#[1] 9812   53
+
+rm(wkTraining)
+wkTraining <- hldTraining
+rm(hldTraining)
+
