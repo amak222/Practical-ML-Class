@@ -74,8 +74,11 @@ dim(d_trn); dim(d_tst)
 
 <p>Rows and columns</p>
 
-<p>[1] 19622    160
-[1]  20      160</p>
+<h4>
+<a id="1-19622----160" class="anchor" href="#1-19622----160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 19622    160</h4>
+
+<h4>
+<a id="1--20------160" class="anchor" href="#1--20------160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1]  20      160</h4>
 
 <p>160 features are present in the data. The data set with 20 observation will be used to perform the final prediction. 
 The "d_trn" data will be be partitioned into training and testing 50/50. Conventionally, the split is typically 60/40,
@@ -91,11 +94,11 @@ wkTesting &lt;- d_trn[-inTrain, ]
 dim(wkTraining); dim(wkTesting)
 </code></pre>
 
-<h1>
-<a id="1-9812--160" class="anchor" href="#1-9812--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812  160</h1>
+<h4>
+<a id="1-9812--160" class="anchor" href="#1-9812--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812  160</h4>
 
-<h1>
-<a id="1-9810--160" class="anchor" href="#1-9810--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9810  160</h1>
+<h4>
+<a id="1-9810--160" class="anchor" href="#1-9810--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9810  160</h4>
 
 <p>Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
 curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
@@ -128,8 +131,30 @@ that's how the experiment was designed and conducted. I will remove them accordi
 "X","raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp","user_name")
 </code></pre>
 
-<p>wkTraining &lt;- wkTraining[!wkNZVvars]
-   dim(wkTraining)</p>
+<p>wkTraining &lt;- wkTraining[!wkNZVvars]</p>
+
+<p>I will also eliminate predictors where NA &gt;= 51%</p>
+
+<pre><code>hldTraining &lt;- wkTraining
+for(i in 1:length(wkTraining)) 
+{ if(sum( is.na(wkTraining[, i] ) ) /nrow(wkTraining) &gt;= .51 ) #NAs &gt; 51% of total Ns
+{for(j in 1:length(hldTraining))
+{if(length( grep(names(wkTraining[i]), names(hldTraining)[j]) ) ==1)  #if same name
+{hldTraining &lt;- hldTraining[ , -j] #Remove that variable}   
+ }      }}
+
+dim(hldTraining)
+</code></pre>
+
+<h4>
+<a id="1-9812---53" class="anchor" href="#1-9812---53" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812   53</h4>
+
+<pre><code>rm(wkTraining)
+wkTraining &lt;- hldTraining
+rm(hldTraining)
+</code></pre>
+
+<p>Only 53 features remain in the data after irrelevant predictors have been removed.</p>
         </section>
 
         <aside id="sidebar">
