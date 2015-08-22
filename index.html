@@ -258,6 +258,134 @@ Balanced Accuracy      0.8301  0.67039   0.7970  0.70775  0.72080
 </code></pre>
 
 <p>Achieved accuracy is .61 in testing and the confusion matrix shows that many cases are misclassified. Possibly a different approach is necessary.</p>
+
+<h3>
+<a id="2-random-forests-rf" class="anchor" href="#2-random-forests-rf" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. RANDOM FORESTS (RF)</h3>
+
+<pre><code>mod_RF &lt;- train(classe ~. , method="rf", data=wkTraining, prox=TRUE)
+prd_RF &lt;- predict(mod_RF, wkTesting)
+RF_CMX &lt;- confusionMatrix(prd_RF, wkTesting$classe)
+RF_CMX
+</code></pre>
+
+<p>Confusion Matrix and Statistics</p>
+
+<pre><code>      Reference
+Prediction    A    B    C    D    E
+        A 2778   28    0    0    0
+        B   11 1854   16    3    5
+        C    1   13 1688   14    7
+        D    0    2    7 1585    5
+        E    0    1    0    6 1786
+</code></pre>
+
+<p>Overall Statistics</p>
+
+<pre><code>     Accuracy : 0.9879          
+     95% CI : (0.9855, 0.9899)
+No Information Rate : 0.2844          
+P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+
+              Kappa : 0.9847          
+ Mcnemar's Test P-Value : NA              
+</code></pre>
+
+<p>Statistics by Class:</p>
+
+<pre><code>                 Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9957   0.9768   0.9866   0.9857   0.9906
+Specificity            0.9960   0.9956   0.9957   0.9983   0.9991
+Pos Pred Value         0.9900   0.9815   0.9797   0.9912   0.9961
+Neg Pred Value         0.9983   0.9944   0.9972   0.9972   0.9979
+Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2832   0.1890   0.1721   0.1616   0.1821
+Detection Prevalence   0.2860   0.1926   0.1756   0.1630   0.1828
+</code></pre>
+
+<p>Balanced Accuracy      0.9959   0.9862   0.9911   0.9920   0.9948</p>
+
+<p>The RF algorithm took a while to run, but the results look promising on the testing data. Achieved accuracy = .988 and somewhat a small number of cases were misclasified as shown by the confusion matrix</p>
+
+<h3>
+<a id="3-gradient-boosting-model-with-boot-strapping" class="anchor" href="#3-gradient-boosting-model-with-boot-strapping" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. GRADIENT BOOSTING MODEL WITH BOOT-STRAPPING</h3>
+
+<pre><code>mod_B_cv &lt;- train(wkTraining$classe ~ ., data=wkTraining, method="gbm", trControl = fitControl, verbose=FALSE)
+
+prd_B_cv &lt;- predict(mod_B_cv, wkTesting)
+B_CMX_cv &lt;- confusionMatrix(prd_B_cv, wkTesting$classe)
+B_CMX_cv
+</code></pre>
+
+<p>Confusion Matrix and Statistics</p>
+
+<pre><code>      Reference
+Prediction    A    B    C    D    E
+         A 2719   85    4    2   10
+         B   49 1750   52    6   28
+         C   16   57 1636   38   17
+         D    3    3   14 1554   30
+         E    3    3    5    8 1718
+</code></pre>
+
+<p>Overall Statistics</p>
+
+<pre><code>           Accuracy : 0.9559          
+             95% CI : (0.9516, 0.9598)
+  No Information Rate : 0.2844          
+  P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+
+              Kappa : 0.9442          
+ Mcnemar's Test P-Value : 1.398e-11       
+</code></pre>
+
+<p>Statistics by Class:</p>
+
+<pre><code>                 Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9746   0.9220   0.9562   0.9664   0.9529
+Specificity            0.9856   0.9829   0.9842   0.9939   0.9976
+Pos Pred Value         0.9642   0.9284   0.9274   0.9688   0.9891
+Neg Pred Value         0.9898   0.9813   0.9907   0.9934   0.9895
+Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2772   0.1784   0.1668   0.1584   0.1751
+Detection Prevalence   0.2875   0.1922   0.1798   0.1635   0.1771
+Balanced Accuracy      0.9801   0.9525   0.9702   0.9802   0.9752
+</code></pre>
+
+<p>The boosting algorithm performed well, but it was not as accurate as the random forests. The acheived accuracy was 0.96. I also ran a boosting algorithm, but without the boot strapping component and the accuracy went down to 0.95. The boot strapping impact was rather small.</p>
+
+<p>After comparing the predictive accuracy for each 4 algorithms I ran, I selected the highest accuracy with the RF algorithm. I feel comfortable using accuracy in this case because our outcome classes were not rare events.</p>
+
+<p>Finally, I used the RF and Boosting algorithms to produce prediction on the 20 held out examples. They both produced identical predictions below.</p>
+
+<pre><code>prd_1 &lt;- predict(mod_RF, newdata = d_tst)
+prd_2 &lt;- predict(mod_B_cv, newdata = d_tst)
+prd_1; prd_2
+[1] B A B A A E D B A A B C B A E E A B B B
+
+[1] B A B A A E D B A A B C B A E E A B B B
+
+Levels: A B C D E
+</code></pre>
+
+<h1>
+<a id="jeff-leek-provides-a-sample-code-that-creates-text-files-with-predictions-the-individual-text-files-are-uploaded-to-the-coursera-class-web-site" class="anchor" href="#jeff-leek-provides-a-sample-code-that-creates-text-files-with-predictions-the-individual-text-files-are-uploaded-to-the-coursera-class-web-site" aria-hidden="true"><span class="octicon octicon-link"></span></a>Jeff Leek provides a sample code that creates text files with predictions. The individual text files are uploaded to the Coursera class web site.</h1>
+
+<h3>
+<a id="writing-the-answers-into-a-text-file" class="anchor" href="#writing-the-answers-into-a-text-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Writing the answers into a text file</h3>
+
+<pre><code>pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+ filename = paste0("problem_id_",i,".txt")
+  write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+ }
+
+pml_write_files(prd_1) #predictions from the random forest algorithm
+</code></pre>
+
+<h2>
+<a id="end" class="anchor" href="#end" aria-hidden="true"><span class="octicon octicon-link"></span></a>END</h2>
         </section>
 
         <aside id="sidebar">
