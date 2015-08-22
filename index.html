@@ -72,14 +72,64 @@ d_tst &lt;- read.csv("pml-testing.csv", header=TRUE,na.strings=c("NA","#DIV/0!",
 dim(d_trn); dim(d_tst)
 </code></pre>
 
-<p>Rows and columns
-[1] 19622    160
+<p>Rows and columns</p>
+
+<p>[1] 19622    160
 [1]  20      160</p>
 
 <p>160 features are present in the data. The data set with 20 observation will be used to perform the final prediction. 
 The "d_trn" data will be be partitioned into training and testing 50/50. Conventionally, the split is typically 60/40,
-but I decided to reduce the processign time (random forests take a long time) with the smaller training data set.
+but I decided to reduce the processing time (random forests take a long time) with the smaller training data set.
 The partition is done on the classification target variable "classe."</p>
+
+<h3>
+<a id="data-partition" class="anchor" href="#data-partition" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Partition</h3>
+
+<pre><code>inTrain &lt;- createDataPartition(y=d_trn$classe, p=0.5, list=FALSE)
+wkTraining &lt;- d_trn[inTrain, ]
+wkTesting &lt;- d_trn[-inTrain, ]
+dim(wkTraining); dim(wkTesting)
+</code></pre>
+
+<h1>
+<a id="1-9812--160" class="anchor" href="#1-9812--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9812  160</h1>
+
+<h1>
+<a id="1-9810--160" class="anchor" href="#1-9810--160" aria-hidden="true"><span class="octicon octicon-link"></span></a>[1] 9810  160</h1>
+
+<p>Upon preliminary data observation, I noticed quite a few field with statistical summaries like standard deviation
+curtosis, etc that were derived from the primary exercise repetitions. Many of these fields contained "NA" values.
+These fields are not very useful to make predictiions unless the predictions are made on repetitive exercise and
+not on a one-time obsevation similar to the ones in the 20 sample data. Features with NA of more than 50% of
+observations as well as near zero variance field will be removed.</p>
+
+<p>Among other irrelevant features were the features representing user names, date and time stamps and some indication what
+observation window the measurements fell into. These predictors are highly correlated with the outcome variable because
+that's how the experiment was designed and conducted. I will remove them accordingly.</p>
+
+<h3>
+<a id="near-zero-variance-predictors-nzv" class="anchor" href="#near-zero-variance-predictors-nzv" aria-hidden="true"><span class="octicon octicon-link"></span></a>Near Zero Variance Predictors (NZV)</h3>
+
+<p>Let's determine what predictors have no or little variability in them</p>
+
+<p>wkDataNZV &lt;- nearZeroVar(wkTraining, saveMetrics=TRUE)
+   wkDataNZV</p>
+
+<p>Remove the NZV and irrelevant predictors from the data</p>
+
+<pre><code>wkNZVvars &lt;- names(wkTraining) %in%  c("new_window","num_window","kurtosis_yaw_belt","skewness_yaw_belt",
+"amplitude_yaw_belt","avg_roll_arm","stddev_roll_arm","var_roll_arm","avg_pitch_arm","stddev_pitch_arm","var_pitch_arm",
+"avg_yaw_arm","stddev_yaw_arm","var_yaw_arm","amplitude_roll_arm","kurtosis_yaw_dumbbell","skewness_yaw_dumbbel",
+"amplitude_yaw_dumbbel","kurtosis_yaw_forearm","skewness_yaw_forearm","amplitude_roll_forearm","amplitude_yaw_forearm",
+"avg_roll_forearm","stddev_roll_forearm","var_roll_forearm","avg_pitch_forearm","stddev_pitch_forearm",
+"var_pitch_forearm","avg_yaw_forearm","stddev_yaw_forearm","var_yaw_forearm","min_pitch_arm","skewness_yaw_dumbbell",
+"amplitude_yaw_dumbbell",
+#irrelevant features
+"X","raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp","user_name")
+</code></pre>
+
+<p>wkTraining &lt;- wkTraining[!wkNZVvars]
+   dim(wkTraining)</p>
         </section>
 
         <aside id="sidebar">
