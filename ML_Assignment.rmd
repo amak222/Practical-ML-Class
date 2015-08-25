@@ -1,0 +1,648 @@
+> #Set Work Directory
+> setwd("~/Career/Practical_Machine_Learning/Assignments")
+> 
+> set.seed(1357)
+> library(lattice)
+> library(ggplot2)
+Warning message:
+package 'ggplot2' was built under R version 3.2.2 
+> library(caret)
+> library(rpart)
+> library(rattle)
+Loading required package: RGtk2
+Rattle: A free graphical interface for data mining with R.
+Version 3.5.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
+Type 'rattle()' to shake, rattle, and roll your data.
+Warning messages:
+1: package 'rattle' was built under R version 3.2.2 
+2: package 'RGtk2' was built under R version 3.2.2 
+> 
+> d_trn <- read.csv("pml-training.csv", header=TRUE,na.strings=c("NA","#DIV/0!",""))
+> d_tst <- read.csv("pml-testing.csv", header=TRUE,na.strings=c("NA","#DIV/0!",""))
+> 
+> dim(d_trn); dim(d_tst)
+[1] 19622   160
+[1]  20 160
+> 
+> #[1] 19622   160
+> #[1]  20 160
+> 
+> # Partition the Training Data
+> 
+> inTrain <- createDataPartition(y=d_trn$classe, p=0.5, list=FALSE)
+> 
+> wkTraining <- d_trn[inTrain, ]
+> wkTesting <- d_trn[-inTrain, ]
+> dim(wkTraining); dim(wkTesting)
+[1] 9812  160
+[1] 9810  160
+> 
+> #Eliminate Zero Variance Predictors
+> 
+> wkDataNZV <- nearZeroVar(wkTraining, saveMetrics=TRUE)
+> wkDataNZV
+                         freqRatio percentUnique zeroVar   nzv
+X                         1.000000  100.00000000   FALSE FALSE
+user_name                 1.106371    0.06114961   FALSE FALSE
+raw_timestamp_part_1      1.000000    8.52017937   FALSE FALSE
+raw_timestamp_part_2      1.000000   92.59070526   FALSE FALSE
+cvtd_timestamp            1.005215    0.20383204   FALSE FALSE
+new_window               43.198198    0.02038320   FALSE  TRUE
+num_window                1.045455    8.72401141   FALSE FALSE
+roll_belt                 1.159524    9.31512434   FALSE FALSE
+pitch_belt                1.106796   15.63391765   FALSE FALSE
+yaw_belt                  1.187500   16.45943742   FALSE FALSE
+total_accel_belt          1.081014    0.29555646   FALSE FALSE
+kurtosis_roll_belt        2.000000    2.21157766   FALSE FALSE
+kurtosis_picth_belt       1.000000    1.81410518   FALSE FALSE
+kurtosis_yaw_belt         0.000000    0.00000000    TRUE  TRUE
+skewness_roll_belt        1.000000    2.21157766   FALSE FALSE
+skewness_roll_belt.1      2.000000    1.87525479   FALSE FALSE
+skewness_yaw_belt         0.000000    0.00000000    TRUE  TRUE
+max_roll_belt             1.142857    1.37586629   FALSE FALSE
+max_picth_belt            1.939394    0.20383204   FALSE FALSE
+max_yaw_belt              1.111111    0.56053812   FALSE FALSE
+min_roll_belt             1.166667    1.30452507   FALSE FALSE
+min_pitch_belt            2.187500    0.14268243   FALSE FALSE
+min_yaw_belt              1.111111    0.56053812   FALSE FALSE
+amplitude_roll_belt       1.294118    0.96820220   FALSE FALSE
+amplitude_pitch_belt      3.256410    0.13249083   FALSE FALSE
+amplitude_yaw_belt        0.000000    0.01019160    TRUE  TRUE
+var_total_accel_belt      1.600000    0.36689768   FALSE FALSE
+avg_roll_belt             1.000000    1.31471667   FALSE FALSE
+stddev_roll_belt          1.066667    0.48919690   FALSE FALSE
+var_roll_belt             1.945946    0.52996331   FALSE FALSE
+avg_pitch_belt            1.333333    1.43701590   FALSE FALSE
+stddev_pitch_belt         1.135135    0.36689768   FALSE FALSE
+var_pitch_belt            1.084746    0.48919690   FALSE FALSE
+avg_yaw_belt              1.000000    1.60008153   FALSE FALSE
+stddev_yaw_belt           1.653846    0.45862210   FALSE FALSE
+var_yaw_belt              1.360000    0.94781900   FALSE FALSE
+gyros_belt_x              1.092125    1.24337546   FALSE FALSE
+gyros_belt_y              1.138633    0.63187933   FALSE FALSE
+gyros_belt_z              1.075085    1.55931512   FALSE FALSE
+accel_belt_x              1.014815    1.62046474   FALSE FALSE
+accel_belt_y              1.125320    1.33509988   FALSE FALSE
+accel_belt_z              1.106635    2.83326539   FALSE FALSE
+magnet_belt_x             1.022222    2.86384020   FALSE FALSE
+magnet_belt_y             1.038095    2.86384020   FALSE FALSE
+magnet_belt_z             1.030973    4.20913168   FALSE FALSE
+roll_arm                 51.575758   22.08520179   FALSE FALSE
+pitch_arm                81.047619   25.13249083   FALSE FALSE
+yaw_arm                  35.458333   24.25601305   FALSE FALSE
+total_accel_arm           1.017391    0.67264574   FALSE FALSE
+var_accel_arm             8.000000    2.19119446   FALSE FALSE
+avg_roll_arm             39.000000    1.87525479   FALSE  TRUE
+stddev_roll_arm          39.000000    1.87525479   FALSE  TRUE
+var_roll_arm             39.000000    1.87525479   FALSE  TRUE
+avg_pitch_arm            39.000000    1.87525479   FALSE  TRUE
+stddev_pitch_arm         39.000000    1.87525479   FALSE  TRUE
+var_pitch_arm            39.000000    1.87525479   FALSE  TRUE
+avg_yaw_arm              39.000000    1.87525479   FALSE  TRUE
+stddev_yaw_arm           42.000000    1.84467998   FALSE  TRUE
+var_yaw_arm              42.000000    1.84467998   FALSE  TRUE
+gyros_arm_x               1.154506    6.33917652   FALSE FALSE
+gyros_arm_y               1.383721    3.62821035   FALSE FALSE
+gyros_arm_z               1.053846    2.28291887   FALSE FALSE
+accel_arm_x               1.056818    7.59274358   FALSE FALSE
+accel_arm_y               1.250000    5.23848349   FALSE FALSE
+accel_arm_z               1.048387    7.56216877   FALSE FALSE
+magnet_arm_x              1.086957   13.16754994   FALSE FALSE
+magnet_arm_y              1.000000    8.49979617   FALSE FALSE
+magnet_arm_z              1.016949   12.49490420   FALSE FALSE
+kurtosis_roll_arm         1.000000    1.85487159   FALSE FALSE
+kurtosis_picth_arm        1.000000    1.83448838   FALSE FALSE
+kurtosis_yaw_arm          1.000000    2.18100285   FALSE FALSE
+skewness_roll_arm         1.000000    1.86506319   FALSE FALSE
+skewness_pitch_arm        1.000000    1.83448838   FALSE FALSE
+skewness_yaw_arm          1.000000    2.18100285   FALSE FALSE
+max_roll_arm             19.500000    1.81410518   FALSE  TRUE
+max_picth_arm             9.750000    1.61027313   FALSE FALSE
+max_yaw_arm               1.416667    0.46881370   FALSE FALSE
+min_roll_arm             19.500000    1.72238076   FALSE  TRUE
+min_pitch_arm            13.000000    1.72238076   FALSE FALSE
+min_yaw_arm               1.187500    0.37708928   FALSE FALSE
+amplitude_roll_arm       19.500000    1.76314717   FALSE  TRUE
+amplitude_pitch_arm      14.000000    1.78353037   FALSE FALSE
+amplitude_yaw_arm         1.000000    0.46881370   FALSE FALSE
+roll_dumbbell             1.014493   88.33061557   FALSE FALSE
+pitch_dumbbell            2.285714   86.50631879   FALSE FALSE
+yaw_dumbbell              1.111111   87.95352629   FALSE FALSE
+kurtosis_roll_dumbbell    1.000000    2.21157766   FALSE FALSE
+kurtosis_picth_dumbbell   1.000000    2.23196086   FALSE FALSE
+kurtosis_yaw_dumbbell     0.000000    0.00000000    TRUE  TRUE
+skewness_roll_dumbbell    1.000000    2.24215247   FALSE FALSE
+skewness_pitch_dumbbell   2.000000    2.25234407   FALSE FALSE
+skewness_yaw_dumbbell     0.000000    0.00000000    TRUE  TRUE
+max_roll_dumbbell         1.000000    2.07908683   FALSE FALSE
+max_picth_dumbbell        1.000000    2.03832042   FALSE FALSE
+max_yaw_dumbbell          1.083333    0.63187933   FALSE FALSE
+min_roll_dumbbell         1.000000    1.99755402   FALSE FALSE
+min_pitch_dumbbell        1.000000    2.14023645   FALSE FALSE
+min_yaw_dumbbell          1.083333    0.63187933   FALSE FALSE
+amplitude_roll_dumbbell   3.000000    2.19119446   FALSE FALSE
+amplitude_pitch_dumbbell  3.000000    2.20138606   FALSE FALSE
+amplitude_yaw_dumbbell    0.000000    0.01019160    TRUE  TRUE
+total_accel_dumbbell      1.099567    0.41785569   FALSE FALSE
+var_accel_dumbbell        3.500000    2.17081125   FALSE FALSE
+avg_roll_dumbbell         2.000000    2.25234407   FALSE FALSE
+stddev_roll_dumbbell      6.000000    2.21157766   FALSE FALSE
+var_roll_dumbbell         6.000000    2.21157766   FALSE FALSE
+avg_pitch_dumbbell        2.000000    2.25234407   FALSE FALSE
+stddev_pitch_dumbbell     6.000000    2.21157766   FALSE FALSE
+var_pitch_dumbbell        6.000000    2.21157766   FALSE FALSE
+avg_yaw_dumbbell          2.000000    2.25234407   FALSE FALSE
+stddev_yaw_dumbbell       6.000000    2.21157766   FALSE FALSE
+var_yaw_dumbbell          6.000000    2.21157766   FALSE FALSE
+gyros_dumbbell_x          1.000000    2.25234407   FALSE FALSE
+gyros_dumbbell_y          1.115987    2.60905014   FALSE FALSE
+gyros_dumbbell_z          1.048860    1.87525479   FALSE FALSE
+accel_dumbbell_x          1.025000    3.89319201   FALSE FALSE
+accel_dumbbell_y          1.014925    4.52507134   FALSE FALSE
+accel_dumbbell_z          1.191304    3.96453322   FALSE FALSE
+magnet_dumbbell_x         1.139535   10.03872809   FALSE FALSE
+magnet_dumbbell_y         1.147727    8.14309009   FALSE FALSE
+magnet_dumbbell_z         1.029703    6.57358337   FALSE FALSE
+roll_forearm             11.932515   16.52058704   FALSE FALSE
+pitch_forearm            69.500000   23.59355891   FALSE FALSE
+yaw_forearm              17.212389   15.65430086   FALSE FALSE
+kurtosis_roll_forearm     2.000000    1.81410518   FALSE FALSE
+kurtosis_picth_forearm    1.000000    1.81410518   FALSE FALSE
+kurtosis_yaw_forearm      0.000000    0.00000000    TRUE  TRUE
+skewness_roll_forearm     2.000000    1.82429678   FALSE FALSE
+skewness_pitch_forearm    1.000000    1.79372197   FALSE FALSE
+skewness_yaw_forearm      0.000000    0.00000000    TRUE  TRUE
+max_roll_forearm         14.000000    1.62046474   FALSE FALSE
+max_picth_forearm         2.333333    1.03954342   FALSE FALSE
+max_yaw_forearm           1.375000    0.34651447   FALSE FALSE
+min_roll_forearm         14.000000    1.57969833   FALSE FALSE
+min_pitch_forearm         2.470588    1.10069303   FALSE FALSE
+min_yaw_forearm           1.375000    0.34651447   FALSE FALSE
+amplitude_roll_forearm   10.500000    1.72238076   FALSE FALSE
+amplitude_pitch_forearm   3.142857    1.14145944   FALSE FALSE
+amplitude_yaw_forearm     0.000000    0.01019160    TRUE  TRUE
+total_accel_forearm       1.099526    0.69302894   FALSE FALSE
+var_accel_forearm         2.500000    2.21157766   FALSE FALSE
+avg_roll_forearm         14.000000    1.82429678   FALSE FALSE
+stddev_roll_forearm      46.000000    1.80391358   FALSE  TRUE
+var_roll_forearm         46.000000    1.80391358   FALSE  TRUE
+avg_pitch_forearm        42.000000    1.84467998   FALSE  TRUE
+stddev_pitch_forearm     42.000000    1.84467998   FALSE  TRUE
+var_pitch_forearm        42.000000    1.84467998   FALSE  TRUE
+avg_yaw_forearm          42.000000    1.84467998   FALSE  TRUE
+stddev_yaw_forearm       44.000000    1.82429678   FALSE  TRUE
+var_yaw_forearm          44.000000    1.82429678   FALSE  TRUE
+gyros_forearm_x           1.132479    2.75173257   FALSE FALSE
+gyros_forearm_y           1.015873    7.07297187   FALSE FALSE
+gyros_forearm_z           1.057018    2.78230738   FALSE FALSE
+accel_forearm_x           1.181818    7.78638402   FALSE FALSE
+accel_forearm_y           1.196078    9.66163881   FALSE FALSE
+accel_forearm_z           1.064103    5.48308194   FALSE FALSE
+magnet_forearm_x          1.050000   14.19690175   FALSE FALSE
+magnet_forearm_y          1.041667   17.88626172   FALSE FALSE
+magnet_forearm_z          1.031250   15.50142682   FALSE FALSE
+classe                    1.469194    0.05095801   FALSE FALSE
+> 
+> 
+> wkNZVvars <- names(wkTraining) %in% c("new_window","num_window",
++                                       "kurtosis_yaw_belt",
++                                       "skewness_yaw_belt",
++                                       "amplitude_yaw_belt",
++                                       "avg_roll_arm",
++                                       "stddev_roll_arm",
++                                       "var_roll_arm",
++                                       "avg_pitch_arm",
++                                       "stddev_pitch_arm",
++                                       "var_pitch_arm",
++                                       "avg_yaw_arm",
++                                       "stddev_yaw_arm",
++                                       "var_yaw_arm",
++                                       "amplitude_roll_arm",
++                                       "kurtosis_yaw_dumbbell",
++                                       "skewness_yaw_dumbbel",
++                                       "amplitude_yaw_dumbbel",
++                                       "kurtosis_yaw_forearm",
++                                       "skewness_yaw_forearm",
++                                       "amplitude_roll_forearm",
++                                       "amplitude_yaw_forearm",
++                                       "avg_roll_forearm",
++                                       "stddev_roll_forearm",
++                                       "var_roll_forearm",
++                                       "avg_pitch_forearm",
++                                       "stddev_pitch_forearm",
++                                       "var_pitch_forearm",
++                                       "avg_yaw_forearm",
++                                       "stddev_yaw_forearm",
++                                       "var_yaw_forearm",
++                                       "min_pitch_arm",
++                                       "skewness_yaw_dumbbell",
++                                       "amplitude_yaw_dumbbell",
++                                       #remove certain features
++                                       "X",
++                                       "raw_timestamp_part_1",
++                                       "raw_timestamp_part_2",
++                                       "cvtd_timestamp",
++                                       "user_name"
++ )
+> 
+> wkTraining <- wkTraining[!wkNZVvars]
+> dim(wkTraining)
+[1] 9812  123
+> 
+> #Eliminate Predictors where NA >= 51%
+> 
+> hldTraining <- wkTraining
+> 
+> for(i in 1:length(wkTraining)) 
++ { 
++     if(sum( is.na(wkTraining[, i] ) ) /nrow(wkTraining) >= .51 ) #NAs > 51% of total Ns
++     {
++         for(j in 1:length(hldTraining))
++         {
++             if(length( grep(names(wkTraining[i]), names(hldTraining)[j]) ) ==1)  #if same name
++             {
++                 hldTraining <- hldTraining[ , -j] #Remove that variable
++             }   
++         } 
++     }
++ }
+> 
+> dim(hldTraining)
+[1] 9812   53
+> 
+> rm(wkTraining)
+> wkTraining <- hldTraining
+> rm(hldTraining)
+> 
+> #Plot the Predictors
+> 
+> 
+> #qplot(roll_belt,pitch_belt,colour=classe,data=wkTraining)
+> #I get an error message with this function. {Error in loadNamespace(name) : there is no package called 'labeling'}
+> 
+> #Align the testing data with the training data (same predictor clean-up)
+> 
+> 
+> c_names <- colnames(wkTraining)
+> c_names_no_y <- colnames(wkTraining[, -53])
+> 
+> wkTesting <- wkTesting[c_names]
+> d_tst <- d_tst[c_names_no_y]
+> 
+> table(wkTraining$classe)
+
+   A    B    C    D    E 
+2790 1899 1711 1608 1804 
+> 
+> #Ensuring the Same Data Type
+> 
+> for (i in 1:length(d_tst) ) {
++     for(j in 1:length(wkTraining)) {
++         if( length( grep(names(wkTraining[i]), names(d_tst)[j]) ) ==1)  {
++             class(d_tst[j]) <- class(wkTraining[i])
++         }      
++     }      
++ }
+> 
+> d_tst <- rbind(wkTraining[2, -53] , d_tst) 
+> 
+> d_tst <- d_tst[-1,]
+> 
+> #featurePlot(x=wkTraining[,c("roll_belt","pitch_belt")],y=wkTraining$classe, plot="pairs")
+> 
+> #K-folds cross validation
+> # By default, simple bootstrap resampling is used for line 3 in the algorithm above. 
+> #Others are availible, such as repeated K-fold cross-validation, leave-one-out etc. 
+> #The function trainControl can be used to specifiy the type of resampling:
+> 
+> ## 4 TIME BOOT STRAPPING
+> 
+> fitControl <- trainControl(
++     method = "repeatedcv",
++     number = 4,
++     repeats = 4)
+> 
+> 
+> #CPA Preprocessing
+> #preProc <- preProcess(wkTraining[, -53], method = "pca", thresh = 0.8)
+> 
+> #Machine Learning: I will train 3 algorithms - 
+> #Decision Tree
+> #Random Forests
+> #Boosting
+> 
+> #Removing highly correlated features
+> wkTraining <- subset(wkTraining,select=-c(gyros_belt_x,gyros_belt_y,magnet_dumbbell_x,magnet_dumbbell_y))
+> 
+> 
+> #DECISION TREE (DT)
+> 
+> mod_DT <- train(wkTraining$classe ~ ., method="rpart",data=wkTraining)
+> 
+> #mod_DT_cv <- train(wkTraining$classe ~ ., method = "rpart",  data = wkTraining, trControl = fitControl)
+> 
+> 
+> #With PCA components
+> #ctrl <- trainControl(predict(preProc,wkTraining[,-54]))
+> #mod_DT_PCA <- train(classe ~ ., method="rpart",data=wkTraining,trControl = ctrl)
+> 
+> 
+> print(mod_DT)
+CART 
+
+9812 samples
+  48 predictor
+   5 classes: 'A', 'B', 'C', 'D', 'E' 
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 9812, 9812, 9812, 9812, 9812, 9812, ... 
+Resampling results across tuning parameters:
+
+  cp          Accuracy   Kappa       Accuracy SD  Kappa SD  
+  0.04471660  0.3933602  0.17464787  0.04133104   0.07721234
+  0.04877528  0.3799551  0.14912275  0.02451877   0.04569215
+  0.11891199  0.3347643  0.07613697  0.04005675   0.06352246
+
+Accuracy was used to select the optimal model using  the largest value.
+The final value used for the model was cp = 0.0447166. 
+> print(mod_DT$finalModel)
+n= 9812 
+
+node), split, n, loss, yval, (yprob)
+      * denotes terminal node
+
+ 1) root 9812 7022 A (0.28 0.19 0.17 0.16 0.18)  
+   2) roll_belt< 130.5 8967 6182 A (0.31 0.21 0.19 0.18 0.11)  
+     4) pitch_forearm< -33.95 796    5 A (0.99 0.0063 0 0 0) *
+     5) pitch_forearm>=-33.95 8171 6177 A (0.24 0.23 0.21 0.2 0.12)  
+      10) roll_forearm< 123.5 5232 3434 A (0.34 0.24 0.16 0.19 0.069) *
+      11) roll_forearm>=123.5 2939 2058 C (0.067 0.22 0.3 0.21 0.2) *
+   3) roll_belt>=130.5 845    5 E (0.0059 0 0 0 0.99) *
+> #print(mod_DT_cv$finalModel)
+> 
+> #Plot Tree
+> plot(mod_DT$finalModel, uniform=TRUE, main = "Classification Tree")
+> text(mod_DT$finalModel, use.n=TRUE, all=TRUE, cex=.8)
+> 
+> fancyRpartPlot(mod_DT$finalModel)
+> #fancyRpartPlot(mod_DT_cv$finalModel)
+> 
+> prd_DT <- predict(mod_DT, newdata=wkTesting)
+> DT_CMX <- confusionMatrix(prd_DT, wkTesting$classe)
+> DT_CMX
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 2571 1288  810  989  370
+         B    0    0    0    0    0
+         C  210  610  901  619  642
+         D    0    0    0    0    0
+         E    9    0    0    0  791
+
+Overall Statistics
+                                          
+               Accuracy : 0.4346          
+                 95% CI : (0.4247, 0.4444)
+    No Information Rate : 0.2844          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.2533          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9215   0.0000  0.52659   0.0000  0.43871
+Specificity            0.5075   1.0000  0.74305   1.0000  0.99888
+Pos Pred Value         0.4265      NaN  0.30215      NaN  0.98875
+Neg Pred Value         0.9421   0.8065  0.88137   0.8361  0.88768
+Prevalence             0.2844   0.1935  0.17441   0.1639  0.18379
+Detection Rate         0.2621   0.0000  0.09185   0.0000  0.08063
+Detection Prevalence   0.6145   0.0000  0.30398   0.0000  0.08155
+Balanced Accuracy      0.7145   0.5000  0.63482   0.5000  0.71879
+> 
+> #prd_DT_cv <- predict(mod_DT_cv, newdata=wkTesting)
+> #DT_CMX_cv <- confusionMatrix(prd_DT_cv, wkTesting$classe)
+> #DT_CMX_cv
+> 
+> #RANDOM FORESTS
+> 
+> mod_RF <- train(wkTrining$classe ~. , method="rf", data=wkTraining, prox=TRUE)
+Error in eval(expr, envir, enclos) : object 'wkTrining' not found
+> #mod_RF_cv <- train(classe ~. , method="rf", data=wkTraining, trControl = fitControl, prox=TRUE)
+> 
+> 
+> prd_RF <- predict(mod_RF, wkTesting)
+Loading required package: randomForest
+randomForest 4.6-10
+Type rfNews() to see new features/changes/bug fixes.
+> RF_CMX <- confusionMatrix(prd_RF, wkTesting$classe)
+> RF_CMX
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 2782   22    0    0    0
+         B    7 1864   15    2    5
+         C    1   10 1694   11    5
+         D    0    1    2 1589    5
+         E    0    1    0    6 1788
+
+Overall Statistics
+                                          
+               Accuracy : 0.9905          
+                 95% CI : (0.9884, 0.9923)
+    No Information Rate : 0.2844          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.988           
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9971   0.9821   0.9901   0.9882   0.9917
+Specificity            0.9969   0.9963   0.9967   0.9990   0.9991
+Pos Pred Value         0.9922   0.9847   0.9843   0.9950   0.9961
+Neg Pred Value         0.9989   0.9957   0.9979   0.9977   0.9981
+Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2836   0.1900   0.1727   0.1620   0.1823
+Detection Prevalence   0.2858   0.1930   0.1754   0.1628   0.1830
+Balanced Accuracy      0.9970   0.9892   0.9934   0.9936   0.9954
+> 
+> 
+> # Boosting
+> 
+> mod_B <- train(wkTraining$classe ~ ., data=wkTraining, method="gbm", verbose=FALSE)
+Loading required package: gbm
+Loading required package: survival
+
+Attaching package: 'survival'
+
+The following object is masked from 'package:caret':
+
+    cluster
+
+Loading required package: splines
+Loading required package: parallel
+Loaded gbm 2.1.1
+Loading required package: plyr
+> mod_B_cv <- train(wkTraining$classe ~ ., data=wkTraining, method="gbm", trControl = fitControl, verbose=FALSE)
+> print(mod_B)
+Stochastic Gradient Boosting 
+
+9812 samples
+  48 predictor
+   5 classes: 'A', 'B', 'C', 'D', 'E' 
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 9812, 9812, 9812, 9812, 9812, 9812, ... 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  Accuracy   Kappa      Accuracy SD  Kappa SD   
+  1                   50      0.7369846  0.6662012  0.007619591  0.009888300
+  1                  100      0.8012838  0.7482845  0.007783195  0.009995360
+  1                  150      0.8368531  0.7933977  0.006995435  0.008861496
+  2                   50      0.8407039  0.7981170  0.007005453  0.008896700
+  2                  100      0.8955396  0.8677189  0.004594424  0.005901974
+  2                  150      0.9193777  0.8978975  0.004022156  0.005105607
+  3                   50      0.8867087  0.8564860  0.006915689  0.008802007
+  3                  100      0.9294041  0.9105846  0.005010734  0.006357031
+  3                  150      0.9490204  0.9354437  0.004104045  0.005202891
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning
+ parameter 'n.minobsinnode' was held constant at a value of 10
+Accuracy was used to select the optimal model using  the largest value.
+The final values used for the model were n.trees = 150, interaction.depth = 3, shrinkage
+ = 0.1 and n.minobsinnode = 10. 
+> print(mod_B_cv)
+Stochastic Gradient Boosting 
+
+9812 samples
+  48 predictor
+   5 classes: 'A', 'B', 'C', 'D', 'E' 
+
+No pre-processing
+Resampling: Cross-Validated (4 fold, repeated 4 times) 
+Summary of sample sizes: 7359, 7359, 7359, 7359, 7358, 7359, ... 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  Accuracy   Kappa      Accuracy SD  Kappa SD   
+  1                   50      0.7417455  0.6724447  0.007728596  0.010008134
+  1                  100      0.8057229  0.7540522  0.005897057  0.007515316
+  1                  150      0.8415213  0.7994397  0.007065984  0.008943077
+  2                   50      0.8473051  0.8065938  0.007731570  0.009739641
+  2                  100      0.8994859  0.8728153  0.005219711  0.006585886
+  2                  150      0.9255253  0.9057455  0.004557812  0.005772486
+  3                   50      0.8909758  0.8619873  0.005613026  0.007072825
+  3                  100      0.9346978  0.9173558  0.004833038  0.006124146
+  3                  150      0.9536030  0.9412926  0.003455929  0.004376971
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+Tuning
+ parameter 'n.minobsinnode' was held constant at a value of 10
+Accuracy was used to select the optimal model using  the largest value.
+The final values used for the model were n.trees = 150, interaction.depth = 3, shrinkage
+ = 0.1 and n.minobsinnode = 10. 
+> 
+> prd_B <- predict(mod_B, wkTesting)
+> prd_B_cv <- predict(mod_B_cv, wkTesting)
+> 
+> B_CMX <- confusionMatrix(prd_B, wkTesting$classe)
+> B_CMX_cv <- confusionMatrix(prd_B_cv, wkTesting$classe)
+> B_CMX
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 2727   69    4    1   12
+         B   42 1770   63    8   26
+         C   11   43 1619   37   27
+         D    9    5   19 1555   36
+         E    1   11    6    7 1702
+
+Overall Statistics
+                                          
+               Accuracy : 0.9555          
+                 95% CI : (0.9512, 0.9595)
+    No Information Rate : 0.2844          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.9436          
+ Mcnemar's Test P-Value : 5.212e-12       
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9774   0.9326   0.9462   0.9670   0.9440
+Specificity            0.9877   0.9824   0.9854   0.9916   0.9969
+Pos Pred Value         0.9694   0.9272   0.9321   0.9575   0.9855
+Neg Pred Value         0.9910   0.9838   0.9886   0.9935   0.9875
+Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2780   0.1804   0.1650   0.1585   0.1735
+Detection Prevalence   0.2867   0.1946   0.1771   0.1655   0.1760
+Balanced Accuracy      0.9826   0.9575   0.9658   0.9793   0.9704
+> B_CMX_cv
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 2716   70    2    0   13
+         B   51 1773   68    9   34
+         C   14   39 1618   39   22
+         D    9    9   17 1551   37
+         E    0    7    6    9 1697
+
+Overall Statistics
+                                          
+               Accuracy : 0.9536          
+                 95% CI : (0.9493, 0.9577)
+    No Information Rate : 0.2844          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.9413          
+ Mcnemar's Test P-Value : 6.98e-16        
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9735   0.9341   0.9456   0.9646   0.9412
+Specificity            0.9879   0.9795   0.9859   0.9912   0.9973
+Pos Pred Value         0.9697   0.9163   0.9342   0.9556   0.9872
+Neg Pred Value         0.9894   0.9841   0.9885   0.9930   0.9869
+Prevalence             0.2844   0.1935   0.1744   0.1639   0.1838
+Detection Rate         0.2769   0.1807   0.1649   0.1581   0.1730
+Detection Prevalence   0.2855   0.1972   0.1766   0.1654   0.1752
+Balanced Accuracy      0.9807   0.9568   0.9658   0.9779   0.9692
+> 
+> #FINALLY CHOOSE THE 2 BEST PERFORMING ALGORITHMS TO PREDICT THE 20 CASES
+> 
+> prd_1 <- predict(mod_RF, newdata = d_tst)
+> prd_2 <- predict(mod_B_cv, newdata = d_tst)
+> prd_1; prd_2
+ [1] B A B A A E D B A A B C B A E E A B B B
+Levels: A B C D E
+ [1] B A B A A E D B A A B C B A E E A B B B
+Levels: A B C D E
+> 
+> #Actually both algorithms produce the same exact predictions for the 20 out of sample examples
+> 
+> 
+> 
+> ############################################
+> # Writing the answers into a text file
+> ############################################
+> 
+> pml_write_files = function(x){
++     n = length(x)
++     for(i in 1:n){
++         filename = paste0("problem_id_",i,".txt")
++         write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
++     }
++ }
+> 
+> pml_write_files(prd_1) #predictions from the random forest algorith
